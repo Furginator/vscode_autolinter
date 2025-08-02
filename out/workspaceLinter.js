@@ -68,7 +68,8 @@ class WorkspaceLinter {
         if (!vscode.workspace.workspaceFolders)
             return;
         const workspaceFolder = vscode.workspace.workspaceFolders[0];
-        const files = await vscode.workspace.findFiles('**/*.{ts,tsx,js,jsx,py,html,css,scss,sass,json,yaml,yml,md,vue,svelte,astro}', '**/node_modules/**');
+        const files = await vscode.workspace.findFiles('**/*.{ts,tsx,js,jsx,py,html,css,scss,sass}', // Removed json,yaml,yml,md,vue,svelte,astro
+        '{**/node_modules/**,**/dist/**,**/build/**,**/out/**,**/.git/**,**/coverage/**,**/.vscode/**,**/lib/**,**/venv/**,**/__pycache__/**}');
         vscode.window.withProgress({
             location: vscode.ProgressLocation.Notification,
             title: "Linting workspace files...",
@@ -79,6 +80,8 @@ class WorkspaceLinter {
             for (const file of files) {
                 if (token.isCancellationRequested)
                     break;
+                if (!this.shouldLintFile(file))
+                    continue; // Add this line
                 await this.lintFile(file);
                 processedFiles++;
                 progress.report({
@@ -114,6 +117,29 @@ class WorkspaceLinter {
             'sass': 'css'
         };
         return this.linters.get(linterMap[ext]);
+    }
+    shouldLintFile(uri) {
+        const filePath = uri.fsPath;
+        // Exclude common directories
+        const excludePatterns = [
+            '/node_modules/',
+            '/dist/',
+            '/build/',
+            '/out/',
+            '/.git/',
+            '/coverage/',
+            '/.vscode/',
+            '/lib/',
+            '/venv/',
+            '/__pycache__/',
+            '/.next/',
+            '/.nuxt/',
+            '/target/',
+            '/vendor/',
+            '/.cache/',
+            '/tmp/'
+        ];
+        return !excludePatterns.some(pattern => filePath.includes(pattern));
     }
 }
 exports.WorkspaceLinter = WorkspaceLinter;
