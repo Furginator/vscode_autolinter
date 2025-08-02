@@ -7,6 +7,7 @@
             "ES2020"
         ],
         "sourceMap": true,
+        "baseUrl": "./src",
         "rootDir": "src",
         "strict": true,
         "moduleResolution": "node",
