@@ -1,0 +1,66 @@
+// package.json - Extension manifest
+{
+    "name": "workspace-linter",
+    "displayName": "Workspace Linter",
+    "description": "Automated workspace-wide linting for TypeScript, JavaScript, Python, HTML, CSS and more",
+    "version": "0.1.0",
+    "engines": {
+        "vscode": "^1.60.0"
+    },
+    "categories": [
+        "Linters"
+    ],
+    "activationEvents": [
+        "onStartupFinished"
+    ],
+    "main": "./out/extension.js",
+    "contributes": {
+        "commands": [
+            {
+                "command": "workspace-linter.startLinting",
+                "title": "Start Workspace Linting"
+            },
+            {
+                "command": "workspace-linter.stopLinting", 
+                "title": "Stop Workspace Linting"
+            },
+            {
+                "command": "workspace-linter.lintNow",
+                "title": "Lint Workspace Now"
+            }
+        ],
+        "configuration": {
+            "title": "Workspace Linter",
+            "properties": {
+                "workspace-linter.autoStart": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Automatically start linting on workspace open"
+                },
+                "workspace-linter.lintInterval": {
+                    "type": "number",
+                    "default": 30,
+                    "description": "Interval in seconds for periodic re-linting"
+                },
+                "workspace-linter.enabledLanguages": {
+                    "type": "array",
+                    "default": ["typescript", "javascript", "python", "html", "css"],
+                    "description": "Languages to enable for workspace linting"
+                }
+            }
+        }
+    },
+    "scripts": {
+        "vscode:prepublish": "npm run compile",
+        "compile": "tsc -p ./",
+        "watch": "tsc -watch -p ./"
+    },
+    "devDependencies": {
+        "@types/vscode": "^1.60.0",
+        "@types/node": "14.x",
+        "typescript": "^4.4.4"
+    },
+    "dependencies": {
+        "typescript": "^4.4.4"
+    }
+}
