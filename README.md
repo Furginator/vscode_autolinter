@@ -31,6 +31,7 @@ src/
 - [x] **diagnosticProvider.ts** - Central diagnostic coordination with VS Code integration
 - [x] **workspaceLinter.ts** - Production-ready workspace linting orchestration with queuing system
 - [x] **config/configManager.ts** - Comprehensive configuration management with caching and validation
+- [x] **linters/javascriptLinter.ts** - JavaScript linting using ESLint with intelligent configuration detection
 
 ### 🚧 In Progress - Phase 2: Configuration System
 - [ ] **config/linterConfig.ts** - Linter-specific configuration schemas

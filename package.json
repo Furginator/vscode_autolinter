@@ -253,7 +253,10 @@
     },
     "dependencies": {
         "typescript": "^4.9.0",
-        "glob": "^8.0.0"
+        "glob": "^8.0.0",
+        "eslint": "^8.28.0",
+        "@typescript-eslint/eslint-plugin": "^5.45.0",
+        "@typescript-eslint/parser": "^5.45.0"
     },
     "devDependencies": {
         "@types/vscode": "^1.60.0",
