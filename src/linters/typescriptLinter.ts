@@ -12,7 +12,7 @@ export class TypeScriptLinter {
 
     private initializeProgram() {
         if (!vscode.workspace.workspaceFolders) return;
-
+        
         const workspaceRoot = vscode.workspace.workspaceFolders[0].uri.fsPath;
         const configPath = ts.findConfigFile(workspaceRoot, ts.sys.fileExists, 'tsconfig.json');
         
@@ -28,12 +28,22 @@ export class TypeScriptLinter {
         }
     }
 
+    public isEnabled(): boolean {
+        // Check if TypeScript is enabled in workspace configuration
+        const config = vscode.workspace.getConfiguration('autolinter');
+        return config.get('typescript.enabled', true);
+    }
+
+    public getSupportedExtensions(): string[] {
+        return ['.ts', '.tsx'];
+    }
+
     public async lint(uri: vscode.Uri): Promise<vscode.Diagnostic[]> {
         if (!this.program) return [];
-
+        
         const sourceFile = this.program.getSourceFile(uri.fsPath);
         if (!sourceFile) return [];
-
+        
         const diagnostics: vscode.Diagnostic[] = [];
         
         // Get TypeScript compiler diagnostics

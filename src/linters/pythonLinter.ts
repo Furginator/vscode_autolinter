@@ -4,6 +4,16 @@ import * as cp from 'child_process';
 import * as path from 'path';
 
 export class PythonLinter {
+    public isEnabled(): boolean {
+        // Check if Python linting is enabled in workspace configuration
+        const config = vscode.workspace.getConfiguration('autolinter');
+        return config.get('python.enabled', true);
+    }
+
+    public getSupportedExtensions(): string[] {
+        return ['.py', '.pyw'];
+    }
+
     public async lint(uri: vscode.Uri): Promise<vscode.Diagnostic[]> {
         const diagnostics: vscode.Diagnostic[] = [];
         
@@ -26,6 +36,7 @@ export class PythonLinter {
             ];
 
             let commandIndex = 0;
+
             const tryNextCommand = () => {
                 if (commandIndex >= commands.length) {
                     reject(new Error('No Python linter available'));
