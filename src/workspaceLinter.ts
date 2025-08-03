@@ -5,7 +5,7 @@ import * as fs from 'fs';
 import { DiagnosticProvider, LintIssue } from './diagnosticProvider';
 import { TypeScriptLinter } from './linters/typescriptLinter';
 import { PythonLinter } from './linters/pythonLinter';
-import { ESLintLinter } from './linters/eslintLinter';
+import { JavaScriptLinter } from './linters/javascriptLinter';
 import { HTMLLinter } from './linters/htmlLinter';
 import { CSSLinter } from './linters/cssLinter';
 
@@ -130,7 +130,7 @@ export class WorkspaceLinter implements vscode.Disposable {
     private async initializeLinters(): Promise<void> {
         const linterInstances: Array<[string, ILinter]> = [
             ['typescript', new TypeScriptLinter()],
-            ['javascript', new ESLintLinter()],
+            ['javascript', new JavaScriptLinter()], // Uses ESLint internally
             ['python', new PythonLinter()],
             ['html', new HTMLLinter()],
             ['css', new CSSLinter()]

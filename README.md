@@ -53,11 +53,11 @@ src/
 
 #### Phase 4: Language Linters
 9. **linters/baseLinter.ts** - Abstract base class for all linters
-10. **linters/typescriptLinter.ts** - TypeScript/JavaScript linting
-11. **linters/pythonLinter.ts** - Python code analysis
-12. **linters/cssLinter.ts** - CSS/SCSS linting
-13. **linters/htmlLinter.ts** - HTML template validation
-14. **linters/eslintLinter.ts** - ESLint integration
+10. **linters/typescriptLinter.ts** - TypeScript compiler diagnostics
+11. **linters/javascriptLinter.ts** - JavaScript linting using ESLint
+12. **linters/pythonLinter.ts** - Python code analysis
+13. **linters/cssLinter.ts** - CSS/SCSS linting using stylelint
+14. **linters/htmlLinter.ts** - HTML template validation
 
 #### Phase 5: Advanced Features
 15. **diagnostics/diagnosticManager.ts** - Advanced diagnostic handling

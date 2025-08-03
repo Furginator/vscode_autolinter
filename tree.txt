@@ -8,8 +8,6 @@
 │   ├── linters
 │   │   ├── cssLinter.js
 │   │   ├── cssLinter.js.map
-│   │   ├── eslintLinter.js
-│   │   ├── eslintLinter.js.map
 │   │   ├── htmlLinter.js
 │   │   ├── htmlLinter.js.map
 │   │   ├── pythonLinter.js
@@ -28,7 +26,6 @@
 │   ├── extensions.ts
 │   ├── linters
 │   │   ├── cssLinter.ts
-│   │   ├── eslintLinter.ts
 │   │   ├── htmlLinter.ts
 │   │   ├── pythonLinter.ts
 │   │   └── typescriptLinter.ts
@@ -38,4 +35,4 @@
 ├── tree.txt
 └── tsconfig.json
 
-9 directories, 30 files
+9 directories, 27 files
