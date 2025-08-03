@@ -20,6 +20,7 @@
 │   └── workspaceLinter.js.map
 ├── package.json
 ├── package-lock.json
+├── README.md
 ├── src
 │   ├── config
 │   ├── diagnosticProvider.ts
@@ -37,4 +38,4 @@
 ├── tree.txt
 └── tsconfig.json
 
-9 directories, 29 files
+9 directories, 30 files
