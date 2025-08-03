@@ -1,51 +1,242 @@
 {
-    "name": "workspace-linter",
-    "displayName": "Workspace Linter",
-    "description": "Automated workspace-wide linting for TypeScript, JavaScript, Python, HTML, CSS and more",
+    "name": "vscode-autolinter",
+    "displayName": "AutoLinter",
+    "description": "Intelligent automated linting for TypeScript, JavaScript, Python, HTML, CSS and more with real-time analysis",
     "version": "0.1.0",
     "publisher": "your-publisher-name",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/Furginator/vscode_autolinter"
+    },
+    "bugs": {
+        "url": "https://github.com/Furginator/vscode_autolinter/issues"
+    },
+    "homepage": "https://github.com/Furginator/vscode_autolinter#readme",
     "engines": {
         "vscode": "^1.60.0"
     },
     "categories": [
-        "Linters"
+        "Linters",
+        "Programming Languages",
+        "Other"
+    ],
+    "keywords": [
+        "lint",
+        "linter",
+        "typescript",
+        "javascript",
+        "python",
+        "css",
+        "html",
+        "workspace",
+        "automated",
+        "code quality"
     ],
     "activationEvents": [
-        "onStartupFinished"
+        "onStartupFinished",
+        "onLanguage:typescript",
+        "onLanguage:javascript",
+        "onLanguage:python",
+        "onLanguage:html",
+        "onLanguage:css"
     ],
     "main": "./out/extensions.js",
     "contributes": {
         "commands": [
             {
-                "command": "workspace-linter.startLinting",
-                "title": "Start Workspace Linting"
+                "command": "autolinter.startLinting",
+                "title": "Start Linting",
+                "category": "AutoLinter",
+                "icon": "$(play)"
             },
             {
-                "command": "workspace-linter.stopLinting", 
-                "title": "Stop Workspace Linting"
+                "command": "autolinter.stopLinting",
+                "title": "Stop Linting",
+                "category": "AutoLinter",
+                "icon": "$(stop)"
             },
             {
-                "command": "workspace-linter.lintNow",
-                "title": "Lint Workspace Now"
+                "command": "autolinter.lintWorkspace",
+                "title": "Lint Entire Workspace",
+                "category": "AutoLinter",
+                "icon": "$(folder)"
+            },
+            {
+                "command": "autolinter.lintCurrentFile",
+                "title": "Lint Current File",
+                "category": "AutoLinter",
+                "icon": "$(file)"
+            },
+            {
+                "command": "autolinter.clearDiagnostics",
+                "title": "Clear All Diagnostics",
+                "category": "AutoLinter",
+                "icon": "$(clear-all)"
             }
         ],
+        "menus": {
+            "commandPalette": [
+                {
+                    "command": "autolinter.startLinting"
+                },
+                {
+                    "command": "autolinter.stopLinting"
+                },
+                {
+                    "command": "autolinter.lintWorkspace"
+                },
+                {
+                    "command": "autolinter.lintCurrentFile",
+                    "when": "editorIsOpen"
+                },
+                {
+                    "command": "autolinter.clearDiagnostics"
+                }
+            ],
+            "editor/context": [
+                {
+                    "command": "autolinter.lintCurrentFile",
+                    "when": "editorHasSelection || editorTextFocus",
+                    "group": "autolinter"
+                }
+            ]
+        },
         "configuration": {
-            "title": "Workspace Linter",
+            "title": "AutoLinter",
             "properties": {
-                "workspace-linter.autoStart": {
+                "autolinter.enabled": {
                     "type": "boolean",
                     "default": true,
-                    "description": "Automatically start linting on workspace open"
+                    "description": "Enable/disable AutoLinter extension",
+                    "scope": "window"
                 },
-                "workspace-linter.lintInterval": {
+                "autolinter.autoStart": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Automatically start linting when workspace opens",
+                    "scope": "window"
+                },
+                "autolinter.lintOnSave": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Automatically lint files when saved",
+                    "scope": "window"
+                },
+                "autolinter.lintOnOpen": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Automatically lint files when opened",
+                    "scope": "window"
+                },
+                "autolinter.debounceMs": {
                     "type": "number",
-                    "default": 30,
-                    "description": "Interval in seconds for periodic re-linting"
+                    "default": 300,
+                    "minimum": 100,
+                    "maximum": 5000,
+                    "description": "Debounce delay in milliseconds for file change events",
+                    "scope": "window"
                 },
-                "workspace-linter.enabledLanguages": {
+                "autolinter.maxFiles": {
+                    "type": "number",
+                    "default": 1000,
+                    "minimum": 10,
+                    "maximum": 10000,
+                    "description": "Maximum number of files to lint in workspace",
+                    "scope": "window"
+                },
+                "autolinter.enabledLanguages": {
                     "type": "array",
-                    "default": ["typescript", "javascript", "python", "html", "css"],
-                    "description": "Languages to enable for workspace linting"
+                    "default": [
+                        "typescript",
+                        "javascript",
+                        "python",
+                        "html",
+                        "css",
+                        "scss",
+                        "json",
+                        "yaml"
+                    ],
+                    "items": {
+                        "type": "string",
+                        "enum": [
+                            "typescript",
+                            "javascript",
+                            "python",
+                            "html",
+                            "css",
+                            "scss",
+                            "sass",
+                            "json",
+                            "yaml",
+                            "markdown",
+                            "vue",
+                            "svelte",
+                            "astro"
+                        ]
+                    },
+                    "description": "Languages to enable for linting",
+                    "scope": "window"
+                },
+                "autolinter.excludePatterns": {
+                    "type": "array",
+                    "default": [
+                        "**/node_modules/**",
+                        "**/dist/**",
+                        "**/build/**",
+                        "**/out/**",
+                        "**/.git/**",
+                        "**/*.min.js",
+                        "**/*.min.css"
+                    ],
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "Glob patterns to exclude from linting",
+                    "scope": "window"
+                },
+                "autolinter.severity": {
+                    "type": "string",
+                    "enum": ["error", "warning", "info"],
+                    "default": "warning",
+                    "description": "Default severity level for linting issues",
+                    "scope": "window"
+                },
+                "autolinter.showStatusBar": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Show AutoLinter status in status bar",
+                    "scope": "window"
+                },
+                "autolinter.typescript.enabled": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Enable TypeScript linting",
+                    "scope": "resource"
+                },
+                "autolinter.javascript.enabled": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Enable JavaScript linting",
+                    "scope": "resource"
+                },
+                "autolinter.python.enabled": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Enable Python linting",
+                    "scope": "resource"
+                },
+                "autolinter.css.enabled": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Enable CSS linting",
+                    "scope": "resource"
+                },
+                "autolinter.html.enabled": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Enable HTML linting",
+                    "scope": "resource"
                 }
             }
         }
@@ -56,14 +247,23 @@
         "watch": "tsc -watch -p ./",
         "pretest": "npm run compile && npm run lint",
         "lint": "eslint src --ext ts",
-        "test": "node ./out/test/runTest.js"
+        "test": "node ./out/test/runTest.js",
+        "package": "vsce package",
+        "publish": "vsce publish"
+    },
+    "dependencies": {
+        "typescript": "^4.9.0",
+        "glob": "^8.0.0"
     },
     "devDependencies": {
         "@types/vscode": "^1.60.0",
         "@types/node": "16.x",
-        "@typescript-eslint/eslint-plugin": "^5.1.0",
-        "@typescript-eslint/parser": "^5.1.0",
-        "eslint": "^8.1.0",
-        "typescript": "^4.4.4"
+        "@types/glob": "^8.0.0",
+        "@typescript-eslint/eslint-plugin": "^5.45.0",
+        "@typescript-eslint/parser": "^5.45.0",
+        "eslint": "^8.28.0",
+        "typescript": "^4.9.0",
+        "@vscode/test-electron": "^2.2.0",
+        "vsce": "^2.15.0"
     }
 }
