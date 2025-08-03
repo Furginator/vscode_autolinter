@@ -21,6 +21,7 @@
 ├── README.md
 ├── src
 │   ├── config
+│   │   └── configManager.ts
 │   ├── diagnosticProvider.ts
 │   ├── diagnostics
 │   ├── extensions.ts
@@ -35,4 +36,4 @@
 ├── tree.txt
 └── tsconfig.json
 
-9 directories, 27 files
+9 directories, 28 files
