@@ -28,6 +28,7 @@
 │   ├── linters
 │   │   ├── cssLinter.ts
 │   │   ├── htmlLinter.ts
+│   │   ├── javascriptLinter.ts
 │   │   ├── pythonLinter.ts
 │   │   └── typescriptLinter.ts
 │   ├── test
@@ -36,4 +37,4 @@
 ├── tree.txt
 └── tsconfig.json
 
-9 directories, 28 files
+9 directories, 29 files
