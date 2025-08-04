@@ -1,9 +1,9 @@
 // src/linters/typescriptLinter.ts - TypeScript specific linter
 import * as vscode from 'vscode';
 import * as ts from 'typescript';
-import * as fs from 'fs';
+import { ILinter, LintIssue } from '../workspaceLinter';
 
-export class TypeScriptLinter {
+export class TypeScriptLinter implements ILinter {
     private program: ts.Program | null = null;
 
     constructor() {
@@ -12,10 +12,10 @@ export class TypeScriptLinter {
 
     private initializeProgram() {
         if (!vscode.workspace.workspaceFolders) return;
-        
+
         const workspaceRoot = vscode.workspace.workspaceFolders[0].uri.fsPath;
         const configPath = ts.findConfigFile(workspaceRoot, ts.sys.fileExists, 'tsconfig.json');
-        
+
         if (configPath) {
             const configFile = ts.readConfigFile(configPath, ts.sys.readFile);
             const compilerOptions = ts.parseJsonConfigFileContent(
@@ -23,29 +23,27 @@ export class TypeScriptLinter {
                 ts.sys,
                 workspaceRoot
             );
-            
+
             this.program = ts.createProgram(compilerOptions.fileNames, compilerOptions.options);
         }
     }
 
     public isEnabled(): boolean {
-        // Check if TypeScript is enabled in workspace configuration
-        const config = vscode.workspace.getConfiguration('autolinter');
-        return config.get('typescript.enabled', true);
+        return vscode.workspace.getConfiguration('autolinter').get('typescript.enabled', true);
     }
 
     public getSupportedExtensions(): string[] {
-        return ['.ts', '.tsx'];
+        return ['ts', 'tsx'];
     }
 
-    public async lint(uri: vscode.Uri): Promise<vscode.Diagnostic[]> {
+    public async lint(uri: vscode.Uri): Promise<LintIssue[]> {
         if (!this.program) return [];
-        
+
         const sourceFile = this.program.getSourceFile(uri.fsPath);
         if (!sourceFile) return [];
-        
-        const diagnostics: vscode.Diagnostic[] = [];
-        
+
+        const issues: LintIssue[] = [];
+
         // Get TypeScript compiler diagnostics
         const tsDiagnostics = [
             ...this.program.getSemanticDiagnostics(sourceFile),
@@ -58,26 +56,25 @@ export class TypeScriptLinter {
                 const endPos = diagnostic.file.getLineAndCharacterOfPosition(
                     diagnostic.start + (diagnostic.length || 0)
                 );
-
-                const range = new vscode.Range(
-                    startPos.line,
-                    startPos.character,
-                    endPos.line,
-                    endPos.character
-                );
-
                 const severity = diagnostic.category === ts.DiagnosticCategory.Error
-                    ? vscode.DiagnosticSeverity.Error
-                    : vscode.DiagnosticSeverity.Warning;
-
-                diagnostics.push(new vscode.Diagnostic(
-                    range,
-                    ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n'),
-                    severity
-                ));
+                    ? 'error'
+                    : diagnostic.category === ts.DiagnosticCategory.Warning
+                        ? 'warning'
+                        : 'info';
+                
+                issues.push({
+                    message: ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n'),
+                    severity,
+                    line: startPos.line + 1, // Convert to 1-based
+                    column: startPos.character + 1,
+                    endLine: endPos.line + 1,
+                    endColumn: endPos.character + 1,
+                    source: 'typescript',
+                    code: diagnostic.code
+                });
             }
         }
 
-        return diagnostics;
+        return issues;
     }
 }

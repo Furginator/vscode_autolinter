@@ -57,7 +57,7 @@ export class JavaScriptLinter implements ILinter {
             if (workspaceFolders && workspaceFolders.length > 0) {
                 const workspaceRoot = workspaceFolders[0].uri.fsPath;
                 const eslintPath = path.join(workspaceRoot, 'node_modules', 'eslint');
-                
+
                 if (fs.existsSync(eslintPath)) {
                     this.eslintModule = require(eslintPath);
                     this.isESLintAvailable = true;
@@ -70,7 +70,6 @@ export class JavaScriptLinter implements ILinter {
             this.eslintModule = require('eslint');
             this.isESLintAvailable = true;
             console.log('JavaScriptLinter: Loaded global ESLint');
-
         } catch (error) {
             console.warn('JavaScriptLinter: ESLint not available:', error);
             this.isESLintAvailable = false;
@@ -82,8 +81,8 @@ export class JavaScriptLinter implements ILinter {
      */
     public isEnabled(): boolean {
         const config = this.configManager.getConfiguration();
-        return config.javascript.enabled && 
-               config.javascript.useESLint && 
+        return config.javascript.enabled &&
+               config.javascript.useESLint &&
                this.isESLintAvailable;
     }
 
@@ -93,11 +92,11 @@ export class JavaScriptLinter implements ILinter {
     public getSupportedExtensions(): string[] {
         const config = this.configManager.getConfiguration();
         const extensions = ['js', 'mjs'];
-        
+
         if (config.javascript.enableJSX) {
             extensions.push('jsx');
         }
-        
+
         return extensions;
     }
 
@@ -112,14 +111,14 @@ export class JavaScriptLinter implements ILinter {
         try {
             const document = await vscode.workspace.openTextDocument(uri);
             const text = document.getText();
-            
+
             if (!text.trim()) {
                 return []; // Skip empty files
             }
 
             // Get ESLint configuration
-            const eslintConfig = await this.getESLintConfig(uri);
-            
+            const eslintConfig = await this.getESLintConfig();
+
             // Create ESLint instance
             const ESLint = this.eslintModule.ESLint;
             const eslint = new ESLint({
@@ -141,10 +140,9 @@ export class JavaScriptLinter implements ILinter {
 
             // Convert ESLint results to LintIssues
             return this.convertESLintResults(results);
-
         } catch (error) {
             console.error(`JavaScriptLinter: Error linting ${uri.fsPath}:`, error);
-            
+
             // Return a diagnostic error instead of failing silently
             return [{
                 message: `ESLint error: ${error instanceof Error ? error.message : String(error)}`,
@@ -160,9 +158,9 @@ export class JavaScriptLinter implements ILinter {
     /**
      * Get ESLint configuration for the current workspace
      */
-    private async getESLintConfig(uri: vscode.Uri): Promise<any> {
+    private async getESLintConfig(): Promise<any> {
         const config = this.configManager.getConfiguration().javascript;
-        
+
         // If custom config path is specified, try to load it
         if (config.eslintConfigPath) {
             try {
@@ -184,7 +182,7 @@ export class JavaScriptLinter implements ILinter {
      */
     private getDefaultESLintConfig(): any {
         const config = this.configManager.getConfiguration().javascript;
-        
+
         return {
             env: {
                 browser: true,
@@ -243,7 +241,6 @@ export class JavaScriptLinter implements ILinter {
      */
     private convertESLintResults(results: ESLintResult[]): LintIssue[] {
         const issues: LintIssue[] = [];
-
         for (const result of results) {
             for (const message of result.messages) {
                 issues.push({
@@ -259,7 +256,6 @@ export class JavaScriptLinter implements ILinter {
                 });
             }
         }
-
         return issues;
     }
 
@@ -287,7 +283,7 @@ export class JavaScriptLinter implements ILinter {
         issues: string[];
     }> {
         const issues: string[] = [];
-        
+
         if (!this.isESLintAvailable) {
             issues.push('ESLint is not installed. Run: npm install eslint --save-dev');
             return { available: false, issues };
@@ -327,7 +323,6 @@ export class JavaScriptLinter implements ILinter {
                 configPath,
                 issues
             };
-
         } catch (error) {
             issues.push(`Error checking ESLint: ${error}`);
             return { available: false, issues };
