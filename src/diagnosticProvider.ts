@@ -148,7 +148,7 @@ export class DiagnosticProvider implements vscode.Disposable {
     public getAllDiagnostics(): [vscode.Uri, vscode.Diagnostic[]][] {
         const result: [vscode.Uri, vscode.Diagnostic[]][] = [];
         this.diagnosticCollection.forEach((uri, diagnostics) => {
-            result.push([uri, diagnostics]);
+            result.push([uri, [...diagnostics]]);
         });
         return result;
     }
@@ -183,7 +183,10 @@ export class DiagnosticProvider implements vscode.Disposable {
      * @param severity Diagnostic severity to filter by
      */
     public getDiagnosticsBySeverity(uri: vscode.Uri, severity: vscode.DiagnosticSeverity): vscode.Diagnostic[] {
-        const diagnostics = this.diagnosticCollection.get(uri) || [];
+        const diagnostics = this.diagnosticCollection.get(uri);
+        if (!diagnostics) {
+            return [];
+        }
         return diagnostics.filter(diagnostic => diagnostic.severity === severity);
     }
 
