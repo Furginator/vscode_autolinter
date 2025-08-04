@@ -2,6 +2,7 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as cp from 'child_process';
 
 export class HTMLLinter {
     public isEnabled(): boolean {
@@ -37,7 +38,7 @@ export class HTMLLinter {
         return new Promise((resolve, reject) => {
             // Example command, replace with actual HTML linter command
             const command = `htmlhint ${filePath}`;
-            require('child_process').exec(command, (error, stdout, stderr) => {
+            cp.exec(command, (error: cp.ExecException | null, stdout: string, stderr: string) => {
                 if (error) {
                     reject(error);
                     return;
@@ -61,10 +62,10 @@ export class HTMLLinter {
 
                 const range = new vscode.Range(lineNumber, columnNumber, lineNumber, columnNumber + 1);
                 const diagnostic = new vscode.Diagnostic(range, message, vscode.DiagnosticSeverity.Warning);
-
                 diagnostics.push(diagnostic);
             }
         }
+
         return diagnostics;
     }
 }
