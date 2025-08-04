@@ -1,40 +1,36 @@
-// src/linters/pythonLinter.ts
+// src/linters/pythonLinter.ts - Python specific linter
 import * as vscode from 'vscode';
 import * as cp from 'child_process';
-import * as path from 'path';
+import { ILinter } from '../workspaceLinter';
+import { LintIssue as DiagnosticLintIssue } from '../diagnosticProvider';
 
-export class PythonLinter {
+export class PythonLinter implements ILinter {
     public isEnabled(): boolean {
-        // Check if Python linting is enabled in workspace configuration
-        const config = vscode.workspace.getConfiguration('autolinter');
-        return config.get('python.enabled', true);
+        return vscode.workspace.getConfiguration('autolinter').get('python.enabled', true);
     }
 
     public getSupportedExtensions(): string[] {
-        return ['.py', '.pyw'];
+        return ['py', 'pyw'];
     }
 
-    public async lint(uri: vscode.Uri): Promise<vscode.Diagnostic[]> {
-        const diagnostics: vscode.Diagnostic[] = [];
-        
+    public async lint(uri: vscode.Uri): Promise<DiagnosticLintIssue[]> {
+        const issues: DiagnosticLintIssue[] = [];
+
         try {
-            // Try to run flake8 or pylint
             const result = await this.runPythonLinter(uri.fsPath);
-            return this.parsePythonLinterOutput(result, uri);
+            return this.parsePythonLinterOutput(result);
         } catch (error) {
             console.warn('Python linting failed:', error);
-            return diagnostics;
+            return issues;
         }
     }
 
     private runPythonLinter(filePath: string): Promise<string> {
         return new Promise((resolve, reject) => {
-            // Try flake8 first, then pylint
             const commands = [
-                'flake8 --format="%(path)s:%(row)d:%(col)d: %(code)s %(text)s" ' + filePath,
-                'pylint --output-format=text --reports=no ' + filePath
+                `flake8 --format="%(path)s:%(row)d:%(col)d: %(code)s %(text)s" "${filePath}"`,
+                `pylint --output-format=text --reports=no "${filePath}"`
             ];
-
             let commandIndex = 0;
 
             const tryNextCommand = () => {
@@ -42,10 +38,9 @@ export class PythonLinter {
                     reject(new Error('No Python linter available'));
                     return;
                 }
-
                 const command = commands[commandIndex];
                 cp.exec(command, (error, stdout, stderr) => {
-                    if (error && error.code !== 1) { // Code 1 just means there are linting errors
+                    if (error && error.code !== 1) { // Code 1 means linting issues found
                         commandIndex++;
                         tryNextCommand();
                         return;
@@ -58,8 +53,8 @@ export class PythonLinter {
         });
     }
 
-    private parsePythonLinterOutput(output: string, uri: vscode.Uri): vscode.Diagnostic[] {
-        const diagnostics: vscode.Diagnostic[] = [];
+    private parsePythonLinterOutput(output: string): DiagnosticLintIssue[] {
+        const issues: DiagnosticLintIssue[] = [];
         const lines = output.split('\n');
 
         for (const line of lines) {
@@ -69,44 +64,36 @@ export class PythonLinter {
             const flake8Match = line.match(/^(.+):(\d+):(\d+):\s*(\w+)\s+(.+)$/);
             if (flake8Match) {
                 const [, , lineNum, colNum, code, message] = flake8Match;
-                const range = new vscode.Range(
-                    parseInt(lineNum) - 1, parseInt(colNum) - 1,
-                    parseInt(lineNum) - 1, parseInt(colNum) + 10
-                );
-                
-                const severity = code.startsWith('E') ? 
-                    vscode.DiagnosticSeverity.Error : 
-                    vscode.DiagnosticSeverity.Warning;
-
-                diagnostics.push(new vscode.Diagnostic(
-                    range,
-                    `${code}: ${message}`,
-                    severity
-                ));
+                issues.push({
+                    message: `${code}: ${message}`,
+                    severity: code.startsWith('E') ? 'error' : 'warning',
+                    line: parseInt(lineNum),
+                    column: parseInt(colNum),
+                    endLine: parseInt(lineNum),
+                    endColumn: parseInt(colNum) + 10,
+                    source: 'flake8',
+                    code
+                });
                 continue;
             }
 
-            // Parse pylint format
+            // Parse pylint format: filename:line:col: severity: message
             const pylintMatch = line.match(/^(.+):(\d+):(\d+):\s*(\w+):\s*(.+)$/);
             if (pylintMatch) {
                 const [, , lineNum, colNum, severity, message] = pylintMatch;
-                const range = new vscode.Range(
-                    parseInt(lineNum) - 1, parseInt(colNum) - 1,
-                    parseInt(lineNum) - 1, parseInt(colNum) + 10
-                );
-                
-                const vsSeverity = severity === 'error' ? 
-                    vscode.DiagnosticSeverity.Error : 
-                    vscode.DiagnosticSeverity.Warning;
-
-                diagnostics.push(new vscode.Diagnostic(
-                    range,
+                issues.push({
                     message,
-                    vsSeverity
-                ));
+                    severity: severity.toLowerCase() === 'error' ? 'error' : 'warning',
+                    line: parseInt(lineNum),
+                    column: parseInt(colNum),
+                    endLine: parseInt(lineNum),
+                    endColumn: parseInt(colNum) + 10,
+                    source: 'pylint',
+                    code: severity
+                });
             }
         }
 
-        return diagnostics;
+        return issues;
     }
 }

@@ -120,8 +120,7 @@ export class JavaScriptLinter implements ILinter {
             const eslintConfig = await this.getESLintConfig();
 
             // Create ESLint instance
-            const ESLint = this.eslintModule.ESLint;
-            const eslint = new ESLint({
+            const eslint = new this.eslintModule.ESLint({
                 baseConfig: eslintConfig,
                 useEslintrc: this.configManager.getConfiguration().javascript.useProjectESLintConfig,
                 cwd: this.getWorkspaceRoot()
@@ -291,7 +290,6 @@ export class JavaScriptLinter implements ILinter {
 
         try {
             // Get ESLint version
-            const ESLint = this.eslintModule.ESLint;
             const version = this.eslintModule.version || 'unknown';
 
             // Check for configuration
@@ -333,7 +331,6 @@ export class JavaScriptLinter implements ILinter {
      * Dispose of resources
      */
     public dispose(): void {
-        // Nothing to dispose for now
         console.log('JavaScriptLinter: Disposed');
     }
 }
