@@ -1,7 +1,8 @@
 // src/linters/typescriptLinter.ts - TypeScript specific linter
 import * as vscode from 'vscode';
 import * as ts from 'typescript';
-import { ILinter, LintIssue } from '../workspaceLinter';
+import { ILinter } from '../workspaceLinter';
+import { LintIssue } from '../diagnosticProvider';
 
 export class TypeScriptLinter implements ILinter {
     private program: ts.Program | null = null;
@@ -61,11 +62,11 @@ export class TypeScriptLinter implements ILinter {
                     : diagnostic.category === ts.DiagnosticCategory.Warning
                         ? 'warning'
                         : 'info';
-                
+
                 issues.push({
                     message: ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n'),
                     severity,
-                    line: startPos.line + 1, // Convert to 1-based
+                    line: startPos.line + 1,
                     column: startPos.character + 1,
                     endLine: endPos.line + 1,
                     endColumn: endPos.character + 1,
